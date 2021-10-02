@@ -1,4 +1,7 @@
 package com.example.geocachingandroidcodingexercise.geocachingMap
 
-class MapViewViewModel {
+import androidx.lifecycle.ViewModel
+
+class MapViewViewModel: ViewModel() {
+
 }

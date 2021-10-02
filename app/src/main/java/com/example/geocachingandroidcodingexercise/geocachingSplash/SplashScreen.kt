@@ -38,7 +38,7 @@ fun SplashScreen(
         LaunchedEffect(key1 = Unit, block = {
             try {
                 viewModel.startTimer(4000L) {
-                    navController.navigate("geocachingMapView")
+                    navController.navigate("geocachingPermissionScreen")
                 }
             } catch(ex: Exception) {
                 println("timer cancelled")

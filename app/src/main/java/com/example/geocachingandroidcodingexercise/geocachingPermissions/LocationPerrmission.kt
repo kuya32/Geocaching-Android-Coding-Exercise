@@ -16,13 +16,13 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -44,25 +44,81 @@ fun RequiredLocationPermissionScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.padding(16.dp)
         ) {
+            val openDialog =  remember {
+                mutableStateOf(true)
+            }
             when {
                 multiplePermissionState.allPermissionsGranted -> {
-                    navController.navigate("geocachingMapView")
+                    navController.navigate("geocachingMapViewScreen")
                 }
-                else -> {
-                    if (multiplePermissionState.shouldShowRationale) {
-                        PermissionsDialog(
-                            title = "Permissions Alert!",
-                            description = "It looks like you have turned off permission required for this feature. " +
-                                    "It can be enabled under Application Settings.",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .align(Alignment.CenterHorizontally)
+                !multiplePermissionState.permissionRequested -> {
+                    if (openDialog.value) {
+                        AlertDialog(
+                            onDismissRequest = {
+                                openDialog.value = false
+                            },
+                            title = {
+                                Text(
+                                    text = "Location Permission Required!",
+                                    color = Color.Red,
+                                    textAlign = TextAlign.Center,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .align(Alignment.CenterHorizontally)
+                                )
+                            },
+                            text = {
+                                Text(
+                                    text = "User location is important for this app. Please grant the permission.",
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .align(Alignment.CenterHorizontally)
+                                )
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        openDialog.value = false
+                                        multiplePermissionState.launchMultiplePermissionRequest()
+                                    }
+                                ) {
+                                    Text(text = "Yup!")
+                                }
+                            }
                         )
                     }
-
-                    Button(onClick = { multiplePermissionState.launchMultiplePermissionRequest() }) {
-                        Text(text = "Click me!")
-                    }
+                }
+                !multiplePermissionState.allPermissionsGranted -> {
+                    AlertDialog(
+                        onDismissRequest = {
+                            openDialog.value = false
+                        },
+                        title = {
+                            Text(
+                                text = "Location Permission Required!",
+                                color = Color.Red,
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.CenterHorizontally)
+                            )
+                        },
+                        text = {
+                            Text(
+                                text = "Location permission denied. Please, grant us access in application settings to continue.",
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .align(Alignment.CenterHorizontally)
+                            )
+                        },
+                        confirmButton = {
+                            OpenSettingsButton()
+                        }
+                    )
                 }
             }
         }
@@ -70,52 +126,7 @@ fun RequiredLocationPermissionScreen(
 }
 
 @Composable
-fun PermissionsDialog(
-    title: String,
-    description: String,
-    modifier: Modifier
-) {
-    val openDialog =  remember {
-        mutableStateOf(true)
-    }
-    if (openDialog.value) {
-        AlertDialog(
-            onDismissRequest = {
-                openDialog.value = false
-            },
-            title = {
-                Text(
-                    text = title,
-                    color = Color.Red,
-                    textAlign = TextAlign.Center,
-                    fontWeight = FontWeight.Bold,
-                    modifier = modifier
-                )
-            },
-            text = {
-                Text(
-                    text = description,
-                    textAlign = TextAlign.Center,
-                    modifier = modifier
-                )
-            },
-            confirmButton = {
-            },
-            dismissButton = {
-                PermissionsGrantedButton()
-            }
-        )
-    }
-}
-
-@Composable
-fun PermissionsGrantedButton() {
-    
-}
-
-@Composable
-fun PermissionsDeniedButton(
-    navController: NavController,
+fun OpenSettingsButton(
     context: Context = LocalContext.current
 ) {
     Button(
@@ -128,6 +139,6 @@ fun PermissionsDeniedButton(
             )
         }
     ) {
-
+        Text(text = "Open Settings")
     }
 }

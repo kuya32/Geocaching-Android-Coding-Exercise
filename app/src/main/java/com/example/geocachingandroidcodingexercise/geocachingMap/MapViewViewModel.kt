@@ -70,8 +70,8 @@ class MapViewViewModel: ViewModel() {
     @SuppressLint("MissingPermission")
     fun startLocationUpdates(fusedLocationProviderClient: FusedLocationProviderClient) {
         val locationRequest = LocationRequest.create().apply {
-            interval = 10000
-            fastestInterval = 5000
+            interval = 1000
+            fastestInterval = 500
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 

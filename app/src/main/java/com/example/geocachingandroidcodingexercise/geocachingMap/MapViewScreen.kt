@@ -1,6 +1,7 @@
 package com.example.geocachingandroidcodingexercise.geocachingMap
 
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,14 +26,15 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
 import com.google.android.libraries.maps.CameraUpdateFactory
 import com.google.android.libraries.maps.MapView
+import com.google.android.libraries.maps.model.BitmapDescriptorFactory
 import com.google.android.libraries.maps.model.LatLng
 import com.google.android.libraries.maps.model.MarkerOptions
 import com.google.maps.android.ktx.awaitMap
-import com.google.maps.android.ktx.utils.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
+import com.example.geocachingandroidcodingexercise.R
 
 
 @Composable
@@ -73,15 +75,13 @@ fun MapViewAppBar() {
                 Icon(imageVector = Icons.Filled.Navigation, contentDescription = "Navigate Icon")
             }
             IconButton(onClick = { /*TODO*/ }) {
-                Icon(imageVector = Icons.Filled.CenterFocusWeak, contentDescription = "Center Map Icon")
-            }
-            IconButton(onClick = { /*TODO*/ }) {
                 Icon(imageVector = Icons.Filled.Calculate, contentDescription = "Calculate Distance Icon")
             }
         }
     )
 }
 
+@SuppressLint("MissingPermission")
 @Composable
 fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng) {
     val mapView = rememberMapViewLifecycle()
@@ -94,14 +94,11 @@ fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng) {
         AndroidView( {mapView} ) {
             CoroutineScope(Dispatchers.Main).launch {
                 val map = mapView.awaitMap()
+                map.clear()
                 map.uiSettings.isZoomControlsEnabled = true
+                map.isMyLocationEnabled = true
                 
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(destination, 18f))
-
-                val userMarker = MarkerOptions()
-                    .title("User Location")
-                    .position(destination)
-                map.addMarker(userMarker)
             }
         }
     }

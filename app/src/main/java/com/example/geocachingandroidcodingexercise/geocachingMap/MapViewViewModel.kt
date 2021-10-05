@@ -8,19 +8,19 @@ import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
 import com.google.android.gms.location.*
-import com.google.maps.model.LatLng
+import com.google.android.libraries.maps.GoogleMap
 import com.google.android.libraries.maps.MapView
 import com.google.android.libraries.maps.model.PolylineOptions
-import com.google.maps.DirectionsApi
-import com.google.maps.GeoApiContext
 import com.google.maps.android.PolyUtil
-import com.google.maps.model.DirectionsResult
-import com.google.maps.model.TravelMode
-import org.joda.time.DateTime
-import java.util.concurrent.TimeUnit
+import com.google.maps.model.LatLng
+import org.json.JSONObject
 
 
 class MapViewViewModel : ViewModel() {
@@ -29,6 +29,8 @@ class MapViewViewModel : ViewModel() {
     var locationPermissionGranted = mutableStateOf(false)
 
     var isNewLocationPined = mutableStateOf(false)
+
+    var isNavigationRequested = mutableStateOf(false)
 
     private var _userCurrentLat = mutableStateOf(0.0)
     var userCurrentLat: MutableState<Double> = _userCurrentLat
@@ -44,14 +46,20 @@ class MapViewViewModel : ViewModel() {
     private var _pinedLng = mutableStateOf(0.0)
     var pinedLng: MutableState<Double> = _pinedLng
 
+    val pinnedLocation = LatLng(pinedLat.value, pinedLng.value)
+
     private fun getUserCurrentCoordinates(latLng: LatLng) {
         _userCurrentLat.value = latLng.lat
         _userCurrentLng.value = latLng.lng
     }
 
-    private fun getPinedLocation(latLng: LatLng) {
+    fun getPinedLocation(latLng: LatLng) {
         _pinedLat.value = latLng.lat
         _pinedLng.value = latLng.lng
+    }
+
+    fun updatedNavigationRequest(request: Boolean) {
+        isNavigationRequested.value = request
     }
 
     fun updatedPinedLocation(status: Boolean) {
@@ -134,29 +142,27 @@ class MapViewViewModel : ViewModel() {
         )
     }
 
-    private fun getGeoContext(): GeoApiContext {
-        val geoApiContext = GeoApiContext()
-        return geoApiContext.setQueryRateLimit(3)
-            .setApiKey("AIzaSyCbwpB26j4oNzGH1Rwkuqyamk8dOjej0cA")
-            .setConnectTimeout(1, TimeUnit.SECONDS)
-            .setReadTimeout(1, TimeUnit.SECONDS)
-            .setWriteTimeout(1, TimeUnit.SECONDS)
-    }
+    fun directionsRequestToPolyline(origin: LatLng, destination: LatLng, apiKey: String, map: GoogleMap): StringRequest {
+        val path: MutableList<List<com.google.android.libraries.maps.model.LatLng>> = ArrayList()
+        val urlDirection = "https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${apiKey}"
+        println(urlDirection)
+        val directionRequest = object: StringRequest(Request.Method.GET, urlDirection, Response.Listener<String> { response ->
+            val jsonResponse = JSONObject(response)
+            println(jsonResponse.toString())
 
-    fun getDirectionResult(origin: LatLng, destination: LatLng): DirectionsResult {
-        val timeNow = DateTime.now()
+            val routes = jsonResponse.getJSONArray("routes")
+            val legs = routes.getJSONObject(0).getJSONArray("legs")
+            val steps = legs.getJSONObject(0).getJSONArray("steps")
+            for (i in 0 until steps.length()) {
+                val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
+                path.add(PolyUtil.decode(points))
+            }
+            for (i in 0 until path.size) {
+                map.addPolyline(PolylineOptions().addAll(path[i]).color(Color.Blue.hashCode()))
+            }
 
-        return DirectionsApi.newRequest(getGeoContext())
-            .mode(TravelMode.DRIVING)
-            .origin(origin)
-            .destination(destination)
-            .departureTime(timeNow)
-            .await()
-    }
+        }, Response.ErrorListener { _ -> }) {}
 
-
-    fun addPolyline(result: DirectionsResult) {
-        val decodedPath = PolyUtil.decode(result.routes[0].overviewPolyline.encodedPath)
-        println(decodedPath)
+        return directionRequest
     }
 }

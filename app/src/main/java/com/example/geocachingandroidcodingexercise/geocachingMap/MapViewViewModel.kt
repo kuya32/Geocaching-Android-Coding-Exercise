@@ -10,19 +10,20 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
-import com.example.geocachingandroidcodingexercise.R
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.model.Polyline
-import com.google.android.libraries.maps.GoogleMap
-import com.google.android.libraries.maps.model.LatLng
+import com.google.maps.model.LatLng
+import com.google.android.libraries.maps.MapView
+import com.google.android.libraries.maps.model.PolylineOptions
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
+import com.google.maps.android.PolyUtil
 import com.google.maps.model.DirectionsResult
 import com.google.maps.model.TravelMode
+import org.joda.time.DateTime
 import java.util.concurrent.TimeUnit
 
 
-class MapViewViewModel: ViewModel() {
+class MapViewViewModel : ViewModel() {
     private lateinit var locationCallback: LocationCallback
 
     var locationPermissionGranted = mutableStateOf(false)
@@ -44,13 +45,13 @@ class MapViewViewModel: ViewModel() {
     var pinedLng: MutableState<Double> = _pinedLng
 
     private fun getUserCurrentCoordinates(latLng: LatLng) {
-        _userCurrentLat.value = latLng.latitude
-        _userCurrentLng.value = latLng.longitude
+        _userCurrentLat.value = latLng.lat
+        _userCurrentLng.value = latLng.lng
     }
 
     private fun getPinedLocation(latLng: LatLng) {
-        _pinedLat.value = latLng.latitude
-        _pinedLng.value = latLng.longitude
+        _pinedLat.value = latLng.lat
+        _pinedLng.value = latLng.lng
     }
 
     fun updatedPinedLocation(status: Boolean) {
@@ -63,8 +64,14 @@ class MapViewViewModel: ViewModel() {
 
     fun getLocationPermission(context: Context) {
         if (
-            ContextCompat.checkSelfPermission(context.applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(context.applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context.applicationContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                context.applicationContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
             permissionIsGranted(true)
             getDeviceLocation(context)
@@ -109,7 +116,7 @@ class MapViewViewModel: ViewModel() {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
-        locationCallback = object: LocationCallback() {
+        locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 super.onLocationResult(result)
                 result.locations.let { locations ->
@@ -127,22 +134,29 @@ class MapViewViewModel: ViewModel() {
         )
     }
 
-//    fun getGeoContext(): GeoApiContext {
-//        val geoApiContext = GeoApiContext()
-//        return geoApiContext.setQueryRateLimit(3)
-//            .setApiKey(R.string.google_maps_key.toString())
-//            .setConnectTimeout(1, TimeUnit.SECONDS)
-//            .setReadTimeout(1, TimeUnit.SECONDS)
-//            .setWriteTimeout(1, TimeUnit.SECONDS)
-//    }
-//
-//    fun getDirectionResult(): DirectionsResult {
-//        val result = DirectionsApi.newRequest(getGeoContext())
-//            .mode(TravelMode.DRIVING)
-//            .origin()
-//    }
-//
-//    fun addPolyline(result: DirectionsResult, map: GoogleMap) {
-//        var decodedPath = com.google.android.libraries.maps.model.Polyline(result.routes[0].overviewPolyline.encodedPath)
-//    }
+    private fun getGeoContext(): GeoApiContext {
+        val geoApiContext = GeoApiContext()
+        return geoApiContext.setQueryRateLimit(3)
+            .setApiKey("AIzaSyCbwpB26j4oNzGH1Rwkuqyamk8dOjej0cA")
+            .setConnectTimeout(1, TimeUnit.SECONDS)
+            .setReadTimeout(1, TimeUnit.SECONDS)
+            .setWriteTimeout(1, TimeUnit.SECONDS)
+    }
+
+    fun getDirectionResult(origin: LatLng, destination: LatLng): DirectionsResult {
+        val timeNow = DateTime.now()
+
+        return DirectionsApi.newRequest(getGeoContext())
+            .mode(TravelMode.DRIVING)
+            .origin(origin)
+            .destination(destination)
+            .departureTime(timeNow)
+            .await()
+    }
+
+
+    fun addPolyline(result: DirectionsResult) {
+        val decodedPath = PolyUtil.decode(result.routes[0].overviewPolyline.encodedPath)
+        println(decodedPath)
+    }
 }

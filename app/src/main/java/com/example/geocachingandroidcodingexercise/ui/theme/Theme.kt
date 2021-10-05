@@ -8,14 +8,14 @@ import androidx.compose.runtime.Composable
 
 private val DarkColorPalette = darkColors(
     primary = GeocachingGreen,
-    primaryVariant = GeocachingAnalogousVariant,
-    secondary = GeocachingAnalogousSecondary
+    primaryVariant = GeocachingGreen,
+    secondary = GeocachingGreen
 )
 
 private val LightColorPalette = lightColors(
     primary = GeocachingGreen,
-    primaryVariant = GeocachingAnalogousVariant,
-    secondary = GeocachingAnalogousSecondary
+    primaryVariant = GeocachingGreen,
+    secondary = GeocachingGreen
 
     /* Other default colors to override
     background = Color.White,

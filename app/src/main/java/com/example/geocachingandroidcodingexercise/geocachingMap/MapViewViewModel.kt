@@ -19,6 +19,8 @@ class MapViewViewModel: ViewModel() {
 
     var locationPermissionGranted = mutableStateOf(false)
 
+    var isNewLocationPined = mutableStateOf(false)
+
     private var _userCurrentLat = mutableStateOf(0.0)
     var userCurrentLat: MutableState<Double> = _userCurrentLat
 
@@ -26,6 +28,30 @@ class MapViewViewModel: ViewModel() {
     var userCurrentLng: MutableState<Double> = _userCurrentLng
 
     val userCurrentLocation = LatLng(userCurrentLat.value, userCurrentLng.value)
+
+    private var _pinedLat = mutableStateOf(0.0)
+    var pinedLat: MutableState<Double> = _pinedLat
+
+    private var _pinedLng = mutableStateOf(0.0)
+    var pinedLng: MutableState<Double> = _pinedLng
+
+    private fun getUserCurrentCoordinates(latLng: LatLng) {
+        _userCurrentLat.value = latLng.latitude
+        _userCurrentLng.value = latLng.longitude
+    }
+
+    private fun getPinedLocation(latLng: LatLng) {
+        _pinedLat.value = latLng.latitude
+        _pinedLng.value = latLng.longitude
+    }
+
+    fun updatedPinedLocation(status: Boolean) {
+        isNewLocationPined.value = status
+    }
+
+    private fun permissionIsGranted(setGranted: Boolean) {
+        locationPermissionGranted.value = setGranted
+    }
 
     fun getLocationPermission(context: Context) {
         if (
@@ -91,14 +117,5 @@ class MapViewViewModel: ViewModel() {
             locationCallback,
             Looper.getMainLooper()
         )
-    }
-
-    private fun getUserCurrentCoordinates(latLng: LatLng) {
-        _userCurrentLat.value = latLng.latitude
-        _userCurrentLng.value = latLng.longitude
-    }
-
-    private fun permissionIsGranted(setGranted: Boolean) {
-        locationPermissionGranted.value = setGranted
     }
 }

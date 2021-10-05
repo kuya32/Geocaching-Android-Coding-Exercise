@@ -9,5 +9,4 @@ val Teal200 = Color(0xFF03DAC5)
 val Red = Color(0xFFDA0303)
 val Green = Color(0xFF06AA00)
 val GeocachingGreen = Color(0xFF05884E)
-val GeocachingAnalogousVariant = Color(0xFF029E84)
-val GeocachingAnalogousSecondary = Color(0xFF018494)
+

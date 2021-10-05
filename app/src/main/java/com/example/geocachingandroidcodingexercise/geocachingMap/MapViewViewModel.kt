@@ -10,8 +10,16 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import com.example.geocachingandroidcodingexercise.R
 import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.Polyline
+import com.google.android.libraries.maps.GoogleMap
 import com.google.android.libraries.maps.model.LatLng
+import com.google.maps.DirectionsApi
+import com.google.maps.GeoApiContext
+import com.google.maps.model.DirectionsResult
+import com.google.maps.model.TravelMode
+import java.util.concurrent.TimeUnit
 
 
 class MapViewViewModel: ViewModel() {
@@ -118,4 +126,23 @@ class MapViewViewModel: ViewModel() {
             Looper.getMainLooper()
         )
     }
+
+//    fun getGeoContext(): GeoApiContext {
+//        val geoApiContext = GeoApiContext()
+//        return geoApiContext.setQueryRateLimit(3)
+//            .setApiKey(R.string.google_maps_key.toString())
+//            .setConnectTimeout(1, TimeUnit.SECONDS)
+//            .setReadTimeout(1, TimeUnit.SECONDS)
+//            .setWriteTimeout(1, TimeUnit.SECONDS)
+//    }
+//
+//    fun getDirectionResult(): DirectionsResult {
+//        val result = DirectionsApi.newRequest(getGeoContext())
+//            .mode(TravelMode.DRIVING)
+//            .origin()
+//    }
+//
+//    fun addPolyline(result: DirectionsResult, map: GoogleMap) {
+//        var decodedPath = com.google.android.libraries.maps.model.Polyline(result.routes[0].overviewPolyline.encodedPath)
+//    }
 }

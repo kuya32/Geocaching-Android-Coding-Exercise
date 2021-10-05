@@ -7,6 +7,6 @@ val Purple500 = Color(0xFF6200EE)
 val Purple700 = Color(0xFF3700B3)
 val Teal200 = Color(0xFF03DAC5)
 val Red = Color(0xFFDA0303)
-val Green = Color(0xFF06AA00)
+val blue = Color(0xFF0076B4)
 val GeocachingGreen = Color(0xFF05884E)
 

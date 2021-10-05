@@ -39,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 import com.example.geocachingandroidcodingexercise.R
+import com.google.android.libraries.maps.model.PolylineOptions
 
 
 @Composable
@@ -108,7 +109,7 @@ fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng) {
             onClick = {
                 CoroutineScope(Dispatchers.Main).launch {
                     val map = mapView.awaitMap()
-
+                    map.clear()
                     val pinnedLocation = LatLng(viewModel.userCurrentLat.value, viewModel.userCurrentLng.value)
 
                     map.addMarker(MarkerOptions()
@@ -116,7 +117,14 @@ fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng) {
                         .title("Pinned Location")
                     )
 
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(pinnedLocation, 18f))
+//                    map.addPolyline(PolylineOptions()
+//                        .add(LatLng(0.0, 0.0))
+//                        .add(pinnedLocation)
+//                        .width(10f)
+//                        .color(0xFF0076B4.toInt())
+//                    )
+
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(pinnedLocation, 18f))
                 }
             }
         )

@@ -2,17 +2,15 @@ package com.example.geocachingandroidcodingexercise.geocachingMap
 
 
 import android.annotation.SuppressLint
-import android.content.Context
+import android.content.res.Resources
 import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.materialIcon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -28,10 +26,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.navigation.NavController
+import com.android.volley.toolbox.Volley
+import com.example.geocachingandroidcodingexercise.Hilt_MainActivity
+import com.example.geocachingandroidcodingexercise.MainActivity
 import com.google.android.libraries.maps.CameraUpdateFactory
 import com.google.android.libraries.maps.MapView
-import com.google.android.libraries.maps.model.BitmapDescriptorFactory
-import com.google.android.libraries.maps.model.LatLng
 import com.google.android.libraries.maps.model.MarkerOptions
 import com.google.maps.android.ktx.awaitMap
 import kotlinx.coroutines.CoroutineScope
@@ -39,25 +38,27 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.IllegalStateException
 import com.example.geocachingandroidcodingexercise.R
-import com.google.android.libraries.maps.model.PolylineOptions
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.maps.model.LatLng
 
 
+@ExperimentalPermissionsApi
 @Composable
 fun MapViewScreen(
-    navController: NavController,
-    viewModel: MapViewViewModel = hiltViewModel()
+    viewModel: MapViewViewModel = hiltViewModel(),
+    activity: MainActivity
 ) {
     Scaffold(
-        topBar = { MapViewAppBar() }
+        topBar = { MapViewAppBar(viewModel) }
     ) {
         viewModel.getLocationPermission(LocalContext.current)
         val destination = LatLng(viewModel.userCurrentLat.value, viewModel.userCurrentLng.value)
-        LoadMapView(viewModel = viewModel, destination = destination)
+        LoadMapView(viewModel = viewModel, destination = destination, activity)
     }
 }
 
 @Composable
-fun MapViewAppBar() {
+fun MapViewAppBar(viewModel: MapViewViewModel) {
     TopAppBar(
         elevation = 4.dp,
         title = {
@@ -65,19 +66,35 @@ fun MapViewAppBar() {
         },
         backgroundColor = MaterialTheme.colors.primary,
         actions = {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(
+                onClick = {
+                    if (!viewModel.isNavigationRequested.value) {
+                        viewModel.updatedNavigationRequest(true)
+                    } else {
+                        viewModel.updatedNavigationRequest(false)
+                    }
+                }
+            ) {
                 Icon(imageVector = Icons.Filled.Navigation, contentDescription = "Navigate Icon")
             }
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(imageVector = Icons.Filled.Calculate, contentDescription = "Calculate Distance Icon")
+            IconButton(
+                onClick = {
+
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Calculate,
+                    contentDescription = "Calculate Distance Icon"
+                )
             }
         }
     )
 }
 
+@ExperimentalPermissionsApi
 @SuppressLint("MissingPermission")
 @Composable
-fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng) {
+fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng, activity: MainActivity) {
     val mapView = rememberMapViewLifecycle()
 
     Box(
@@ -85,11 +102,32 @@ fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng) {
             .fillMaxSize()
             .background(Color.White)
     ) {
-        AndroidView( {mapView} ) {
+        AndroidView({ mapView }) {
             CoroutineScope(Dispatchers.Main).launch {
                 val map = mapView.awaitMap()
                 map.uiSettings.isZoomControlsEnabled = true
                 map.isMyLocationEnabled = true
+
+                if (viewModel.isNewLocationPined.value && viewModel.isNavigationRequested.value) {
+                    val string = Resources.getSystem().getString(R.string.google_maps_key)
+                    val directionRequest = viewModel.directionsRequestToPolyline(
+                        LatLng(viewModel.pinedLat.value, viewModel.pinedLng.value),
+                        LatLng(viewModel.userCurrentLat.value, viewModel.userCurrentLng.value),
+                        string,
+                        map
+                    )
+                    val requestQueue = Volley.newRequestQueue(activity)
+                    requestQueue.add(directionRequest)
+                } else if (viewModel.isNewLocationPined.value && !viewModel.isNavigationRequested.value) {
+                    map.clear()
+
+                    val originalPinnedLocation = com.google.android.libraries.maps.model.LatLng(viewModel.pinedLat.value, viewModel.pinedLng.value)
+                    map.addMarker(
+                        MarkerOptions()
+                            .position(originalPinnedLocation)
+                            .title("Pinned Location")
+                    )
+                }
             }
         }
         FloatingActionButton(
@@ -110,21 +148,20 @@ fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng) {
                 CoroutineScope(Dispatchers.Main).launch {
                     val map = mapView.awaitMap()
                     map.clear()
-                    val pinnedLocation = LatLng(viewModel.userCurrentLat.value, viewModel.userCurrentLng.value)
+                    val pinnedLocation =
+                        com.google.android.libraries.maps.model.LatLng(viewModel.userCurrentLat.value, viewModel.userCurrentLng.value)
+                    val savedPinnedLocation = LatLng(viewModel.userCurrentLat.value, viewModel.userCurrentLng.value)
 
-                    map.addMarker(MarkerOptions()
-                        .position(pinnedLocation)
-                        .title("Pinned Location")
+                    map.addMarker(
+                        MarkerOptions()
+                            .position(pinnedLocation)
+                            .title("Pinned Location")
                     )
 
-//                    map.addPolyline(PolylineOptions()
-//                        .add(LatLng(0.0, 0.0))
-//                        .add(pinnedLocation)
-//                        .width(10f)
-//                        .color(0xFF0076B4.toInt())
-//                    )
-
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(pinnedLocation, 18f))
+
+                    viewModel.updatedPinedLocation(true)
+                    viewModel.getPinedLocation(savedPinnedLocation)
                 }
             }
         )

@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.geocachingandroidcodingexercise.geocachingMap.MapViewScreen
+import com.example.geocachingandroidcodingexercise.geocachingMap.MapViewViewModel
 import com.example.geocachingandroidcodingexercise.geocachingPermissions.RequiredLocationPermissionScreen
 import com.example.geocachingandroidcodingexercise.ui.theme.GeocachingAndroidCodingExerciseTheme
 import com.example.geocachingandroidcodingexercise.geocachingSplash.SplashScreen
@@ -21,6 +22,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             GeocachingAndroidCodingExerciseTheme {
                 val navController = rememberNavController()
+                val viewModel = MapViewViewModel()
                 NavHost(
                     navController = navController,
                     startDestination = "geocachingSplashScreen"
@@ -32,7 +34,7 @@ class MainActivity : ComponentActivity() {
                         RequiredLocationPermissionScreen(navController = navController)
                     }
                     composable("geocachingMapViewScreen") {
-                        MapViewScreen(navController = navController)
+                        MapViewScreen(viewModel, this@MainActivity)
                     }
                 }
             }

@@ -8,26 +8,29 @@ import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.Color
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
-import com.example.geocachingandroidcodingexercise.R
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
 import com.google.android.gms.location.*
-import com.google.android.gms.maps.model.Polyline
 import com.google.android.libraries.maps.GoogleMap
-import com.google.android.libraries.maps.model.LatLng
-import com.google.maps.DirectionsApi
-import com.google.maps.GeoApiContext
-import com.google.maps.model.DirectionsResult
-import com.google.maps.model.TravelMode
-import java.util.concurrent.TimeUnit
+import com.google.android.libraries.maps.MapView
+import com.google.android.libraries.maps.model.PolylineOptions
+import com.google.maps.android.PolyUtil
+import com.google.maps.model.LatLng
+import org.json.JSONObject
 
 
-class MapViewViewModel: ViewModel() {
+class MapViewViewModel : ViewModel() {
     private lateinit var locationCallback: LocationCallback
 
     var locationPermissionGranted = mutableStateOf(false)
 
     var isNewLocationPined = mutableStateOf(false)
+
+    var isNavigationRequested = mutableStateOf(false)
 
     private var _userCurrentLat = mutableStateOf(0.0)
     var userCurrentLat: MutableState<Double> = _userCurrentLat
@@ -43,14 +46,20 @@ class MapViewViewModel: ViewModel() {
     private var _pinedLng = mutableStateOf(0.0)
     var pinedLng: MutableState<Double> = _pinedLng
 
+    val pinnedLocation = LatLng(pinedLat.value, pinedLng.value)
+
     private fun getUserCurrentCoordinates(latLng: LatLng) {
-        _userCurrentLat.value = latLng.latitude
-        _userCurrentLng.value = latLng.longitude
+        _userCurrentLat.value = latLng.lat
+        _userCurrentLng.value = latLng.lng
     }
 
-    private fun getPinedLocation(latLng: LatLng) {
-        _pinedLat.value = latLng.latitude
-        _pinedLng.value = latLng.longitude
+    fun getPinedLocation(latLng: LatLng) {
+        _pinedLat.value = latLng.lat
+        _pinedLng.value = latLng.lng
+    }
+
+    fun updatedNavigationRequest(request: Boolean) {
+        isNavigationRequested.value = request
     }
 
     fun updatedPinedLocation(status: Boolean) {
@@ -63,8 +72,14 @@ class MapViewViewModel: ViewModel() {
 
     fun getLocationPermission(context: Context) {
         if (
-            ContextCompat.checkSelfPermission(context.applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(context.applicationContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context.applicationContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                context.applicationContext,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
         ) {
             permissionIsGranted(true)
             getDeviceLocation(context)
@@ -109,7 +124,7 @@ class MapViewViewModel: ViewModel() {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
-        locationCallback = object: LocationCallback() {
+        locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 super.onLocationResult(result)
                 result.locations.let { locations ->
@@ -127,22 +142,27 @@ class MapViewViewModel: ViewModel() {
         )
     }
 
-//    fun getGeoContext(): GeoApiContext {
-//        val geoApiContext = GeoApiContext()
-//        return geoApiContext.setQueryRateLimit(3)
-//            .setApiKey(R.string.google_maps_key.toString())
-//            .setConnectTimeout(1, TimeUnit.SECONDS)
-//            .setReadTimeout(1, TimeUnit.SECONDS)
-//            .setWriteTimeout(1, TimeUnit.SECONDS)
-//    }
-//
-//    fun getDirectionResult(): DirectionsResult {
-//        val result = DirectionsApi.newRequest(getGeoContext())
-//            .mode(TravelMode.DRIVING)
-//            .origin()
-//    }
-//
-//    fun addPolyline(result: DirectionsResult, map: GoogleMap) {
-//        var decodedPath = com.google.android.libraries.maps.model.Polyline(result.routes[0].overviewPolyline.encodedPath)
-//    }
+    fun directionsRequestToPolyline(origin: LatLng, destination: LatLng, apiKey: String, map: GoogleMap): StringRequest {
+        val path: MutableList<List<com.google.android.libraries.maps.model.LatLng>> = ArrayList()
+        val urlDirection = "https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${apiKey}"
+        println(urlDirection)
+        val directionRequest = object: StringRequest(Request.Method.GET, urlDirection, Response.Listener<String> { response ->
+            val jsonResponse = JSONObject(response)
+            println(jsonResponse.toString())
+
+            val routes = jsonResponse.getJSONArray("routes")
+            val legs = routes.getJSONObject(0).getJSONArray("legs")
+            val steps = legs.getJSONObject(0).getJSONArray("steps")
+            for (i in 0 until steps.length()) {
+                val points = steps.getJSONObject(i).getJSONObject("polyline").getString("points")
+                path.add(PolyUtil.decode(points))
+            }
+            for (i in 0 until path.size) {
+                map.addPolyline(PolylineOptions().addAll(path[i]).color(Color.Blue.hashCode()))
+            }
+
+        }, Response.ErrorListener { _ -> }) {}
+
+        return directionRequest
+    }
 }

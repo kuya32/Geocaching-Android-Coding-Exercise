@@ -2,6 +2,7 @@ package com.example.geocachingandroidcodingexercise.geocachingMap
 
 
 import android.annotation.SuppressLint
+import android.content.res.Resources
 import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -108,10 +109,11 @@ fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng, activity: Main
                 map.isMyLocationEnabled = true
 
                 if (viewModel.isNewLocationPined.value && viewModel.isNavigationRequested.value) {
+                    val string = Resources.getSystem().getString(R.string.google_maps_key)
                     val directionRequest = viewModel.directionsRequestToPolyline(
                         LatLng(viewModel.pinedLat.value, viewModel.pinedLng.value),
                         LatLng(viewModel.userCurrentLat.value, viewModel.userCurrentLng.value),
-                        "AIzaSyCbwpB26j4oNzGH1Rwkuqyamk8dOjej0cA",
+                        string,
                         map
                     )
                     val requestQueue = Volley.newRequestQueue(activity)

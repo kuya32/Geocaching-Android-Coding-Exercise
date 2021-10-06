@@ -37,10 +37,11 @@ fun SplashScreen(
         }
         LaunchedEffect(key1 = Unit, block = {
             try {
-                viewModel.startTimer(4000L) {
+                // Delays three seconds and then navigates to the permission screen
+                viewModel.startTimer(3000L) {
                     navController.navigate("geocachingPermissionScreen")
                 }
-            } catch(ex: Exception) {
+            } catch (ex: Exception) {
                 println("timer cancelled")
             }
         })

@@ -10,7 +10,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "com.example.geocachingandroidcodingexercise"
+        applicationId "com.github.kuya32.geocachingandroidcodingexercise"
         minSdk 21
         targetSdk 31
         versionCode 1
@@ -22,6 +22,10 @@ android {
         }
     }
 
+    /* Used this method to protect API keys while pushing my project to Github. Implementation steps are located in the README file.
+       This link also provides a step-by-step visual instruction on how to implement your own Google Maps API key. Unfortunately you
+       will have to use my naming conventions.
+       Link: https://www.youtube.com/watch?v=Dhm9LPybnHE&t=240s */
     buildTypes {
         debug {
             buildConfigField 'String', "GeocachingApiKey", GOOGLE_MAPS_API_KEY_GEOCACHING

@@ -1,4 +1,4 @@
-package com.example.geocachingandroidcodingexercise
+package com.github.kuya32.geocachingandroidcodingexercise
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -6,11 +6,11 @@ import androidx.activity.compose.setContent
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.geocachingandroidcodingexercise.geocachingMap.MapViewScreen
-import com.example.geocachingandroidcodingexercise.geocachingMap.MapViewViewModel
-import com.example.geocachingandroidcodingexercise.geocachingPermissions.RequiredLocationPermissionScreen
-import com.example.geocachingandroidcodingexercise.ui.theme.GeocachingAndroidCodingExerciseTheme
-import com.example.geocachingandroidcodingexercise.geocachingSplash.SplashScreen
+import com.github.kuya32.geocachingandroidcodingexercise.geocachingmap.MapViewScreen
+import com.github.kuya32.geocachingandroidcodingexercise.geocachingmap.MapViewViewModel
+import com.github.kuya32.geocachingandroidcodingexercise.geocachingpermissions.LocationPermissionScreen
+import com.github.kuya32.geocachingandroidcodingexercise.ui.theme.GeocachingAndroidCodingExerciseTheme
+import com.github.kuya32.geocachingandroidcodingexercise.geocachingsplash.SplashScreen
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -23,6 +23,8 @@ class MainActivity : ComponentActivity() {
             GeocachingAndroidCodingExerciseTheme {
                 val navController = rememberNavController()
                 val viewModel = MapViewViewModel()
+
+                // Helps navigate through the multiple composable within the application
                 NavHost(
                     navController = navController,
                     startDestination = "geocachingSplashScreen"
@@ -31,7 +33,7 @@ class MainActivity : ComponentActivity() {
                         SplashScreen(navController = navController)
                     }
                     composable("geocachingPermissionScreen") {
-                        RequiredLocationPermissionScreen(navController = navController)
+                        LocationPermissionScreen(navController = navController)
                     }
                     composable("geocachingMapViewScreen") {
                         MapViewScreen(viewModel, this@MainActivity)

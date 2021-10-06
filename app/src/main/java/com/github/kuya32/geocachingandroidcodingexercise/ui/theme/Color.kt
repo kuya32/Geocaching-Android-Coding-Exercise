@@ -1,4 +1,4 @@
-package com.example.geocachingandroidcodingexercise.ui.theme
+package com.github.kuya32.geocachingandroidcodingexercise.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

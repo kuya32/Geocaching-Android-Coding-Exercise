@@ -1,4 +1,4 @@
-package com.example.geocachingandroidcodingexercise
+package com.github.kuya32.geocachingandroidcodingexercise
 
 import org.junit.Test
 

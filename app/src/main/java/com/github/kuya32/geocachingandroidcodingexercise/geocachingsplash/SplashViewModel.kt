@@ -1,4 +1,4 @@
-package com.example.geocachingandroidcodingexercise.geocachingSplash
+package com.github.kuya32.geocachingandroidcodingexercise.geocachingsplash
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.delay

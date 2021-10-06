@@ -1,4 +1,4 @@
-package com.example.geocachingandroidcodingexercise.geocachingPermissions
+package com.github.kuya32.geocachingandroidcodingexercise.geocachingpermissions
 
 import android.Manifest
 import android.content.Context
@@ -27,9 +27,13 @@ import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
+/* Asks the user for permission to use their location. Granted permission sends the user to the map
+ view while denied permission will prompt the user the need for location permission for the application
+  to work. Used the Accompanist permissions API which is still within the experimental phase.
+  Link: https://google.github.io/accompanist/permissions/ */
 @ExperimentalPermissionsApi
 @Composable
-fun RequiredLocationPermissionScreen(
+fun LocationPermissionScreen(
     navController: NavController
 ) {
     val multiplePermissionState = rememberMultiplePermissionsState(
@@ -38,6 +42,7 @@ fun RequiredLocationPermissionScreen(
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
     )
+
     Surface {
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -47,9 +52,11 @@ fun RequiredLocationPermissionScreen(
                 mutableStateOf(true)
             }
             when {
+                // When the location permission for the application is granted, the user is navigated to the map view screen.
                 multiplePermissionState.allPermissionsGranted -> {
                     navController.navigate("geocachingMapViewScreen")
                 }
+                // If the location permission has not been granted/requested, the application will prompt the user about permission with a dialog.
                 !multiplePermissionState.permissionRequested -> {
                     if (openDialog.value) {
                         AlertDialog(
@@ -89,6 +96,8 @@ fun RequiredLocationPermissionScreen(
                         )
                     }
                 }
+                /* If the location permission has been denied, the user will be directed to the application settings and
+                 grant permissions to continue using the app. */
                 !multiplePermissionState.allPermissionsGranted -> {
                     AlertDialog(
                         onDismissRequest = {
@@ -124,8 +133,9 @@ fun RequiredLocationPermissionScreen(
     }
 }
 
+// Let's the user change their location permissions in the application settings
 @Composable
-fun OpenSettingsButton(
+private fun OpenSettingsButton(
     context: Context = LocalContext.current
 ) {
     Button(
@@ -133,7 +143,7 @@ fun OpenSettingsButton(
             context.startActivity(
                 Intent(
                     Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.fromParts("package", "com.example.geocachingandroidcodingexercise", null)
+                    Uri.fromParts("package", "com.github.example.geocachingandroidcodingexercise", null)
                 )
             )
         }

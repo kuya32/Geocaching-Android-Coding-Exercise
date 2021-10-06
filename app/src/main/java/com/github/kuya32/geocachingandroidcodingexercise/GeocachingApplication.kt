@@ -1,4 +1,4 @@
-package com.example.geocachingandroidcodingexercise
+package com.github.kuya32.geocachingandroidcodingexercise
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

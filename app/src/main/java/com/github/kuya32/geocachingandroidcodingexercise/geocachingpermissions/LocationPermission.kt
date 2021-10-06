@@ -125,6 +125,7 @@ fun LocationPermissionScreen(
                         },
                         confirmButton = {
                             OpenSettingsButton()
+                            openDialog.value = false
                         }
                     )
                 }
@@ -143,7 +144,7 @@ private fun OpenSettingsButton(
             context.startActivity(
                 Intent(
                     Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                    Uri.fromParts("package", "com.github.example.geocachingandroidcodingexercise", null)
+                    Uri.fromParts("package", "com.github.kuya32.geocachingandroidcodingexercise", null)
                 )
             )
         }

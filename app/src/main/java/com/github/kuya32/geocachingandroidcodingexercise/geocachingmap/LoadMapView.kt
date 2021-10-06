@@ -59,9 +59,6 @@ fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng, activity: Main
 
         AndroidView({ mapView }) {
             CoroutineScope(Dispatchers.Main).launch {
-                val map = mapView.awaitMap()
-                map.uiSettings.isZoomControlsEnabled = true
-
                 /* Another instance dealing with location permissions. Also this concerns one of the optional task of
                  centering the map on the user location. Instead of using line 82 which auto generates the functionality for me,
                  I could've made another menu item. The onClick functionality would set a boolean variable in my viewModel to
@@ -79,6 +76,9 @@ fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng, activity: Main
                     return@launch
                 }
 
+                // Creates instance of GoogleMap from this MapView
+                val map = mapView.awaitMap()
+                map.uiSettings.isZoomControlsEnabled = true
                 map.isMyLocationEnabled = true
 
                 // Creates directional poly lines on the map when the navigation menu item is clicked
@@ -155,6 +155,8 @@ fun LoadMapView(viewModel: MapViewViewModel, destination: LatLng, activity: Main
                             .align(Alignment.Center)
                     )
                 },
+                /* The total distance is giving in feet, but I could incorporate a function that calculates and changes
+                   the distance in miles. Something to implement to further enhance the app. */
                 text = {
                     Text(
                         text = viewModel.calculatedDistance.value,

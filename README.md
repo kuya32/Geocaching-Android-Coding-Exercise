@@ -19,7 +19,7 @@
 2. Within text document, create key name and value. My example: GOOGLE_MAPS_API_KEY_GEOCACHING="<YOUR API KEY>"
 3. Save file as "gradle.properties" and make sure to put quotes around gradle.properties
 4. Within your app build.gradle file there is a buildTypes block which looks like example below.
-    - `buildTypes {
+    - ```buildTypes {
             debug {
                 buildConfigField 'String', "GeocachingApiKey", GOOGLE_MAPS_API_KEY_GEOCACHING
                 resValue 'string', "GeocachingApiKey", GOOGLE_MAPS_API_KEY_GEOCACHING
@@ -30,7 +30,8 @@
                 buildConfigField 'String', "GeocachingApiKey", GOOGLE_MAPS_API_KEY_GEOCACHING
                 resValue 'String', "GeocachingApiKey", GOOGLE_MAPS_API_KEY_GEOCACHING
             }
-        }`
+        }
+      ```
     - If you are using a different key name in step 2, then you must replace your key name with GOOGLE_MAPS_API_KEY_GEOCACHING in the above example.
     - "GeocachingApiKey" is the key name I chose, but you can name this anything.
 5. Sync your app build.gradle file.
